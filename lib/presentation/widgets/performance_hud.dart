@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
@@ -12,41 +11,44 @@ class PerformanceHUD extends StatefulWidget {
 
 class _PerformanceHUDState extends State<PerformanceHUD> {
   double _fps = 0;
-  double _buildTime = 0;
-  DateTime _lastFrame = DateTime.now();
-  final List<double> _buildTimes = [];
+  double _lastBuildTime = 0;
+  final List<double> _buildTimesWindow = [];
+  Duration _lastFrameTimestamp = Duration.zero;
 
   @override
   void initState() {
     super.initState();
-    SchedulerBinding.instance.addPostFrameCallback(_onFrame);
+    // Register the frame callback to measure timing
+    SchedulerBinding.instance.addPostFrameCallback(_tick);
   }
 
-  void _onFrame(Duration timestamp) {
+  void _tick(Duration timestamp) {
     if (!mounted) return;
 
-    final now = DateTime.now();
-    final frameTime = now.difference(_lastFrame).inMilliseconds;
-    if (frameTime > 0) {
-      _fps = 1000 / frameTime;
+    final Duration delta = timestamp - _lastFrameTimestamp;
+    if (delta.inMilliseconds > 0) {
+      setState(() {
+        _fps = 1000 / delta.inMilliseconds;
+        
+        // Use the Scheduler's internal measuring if available or estimate.
+        // For local assertion, we measure the time between post-frame callbacks.
+        _lastBuildTime = delta.inMicroseconds / 1000;
+        
+        _buildTimesWindow.add(_lastBuildTime);
+        if (_buildTimesWindow.length > 60) {
+          _buildTimesWindow.removeAt(0);
+        }
+      });
     }
-    _lastFrame = now;
+    _lastFrameTimestamp = timestamp;
 
-    // Use a small trick to estimate build time using SchedulerBinding
-    final stopwatch = Stopwatch()..start();
-    SchedulerBinding.instance.addPostFrameCallback((_) {
-      _buildTime = stopwatch.elapsedMicroseconds / 1000;
-      _buildTimes.add(_buildTime);
-      if (_buildTimes.length > 60) _buildTimes.removeAt(0);
-      if (mounted) setState(() {});
-    });
-
-    SchedulerBinding.instance.addPostFrameCallback(_onFrame);
+    // Schedule next frame check
+    SchedulerBinding.instance.addPostFrameCallback(_tick);
   }
 
-  double get _avgBuildTime => _buildTimes.isEmpty
-      ? 0
-      : _buildTimes.reduce((a, b) => a + b) / _buildTimes.length;
+  double get _avgBuildTime => _buildTimesWindow.isEmpty 
+      ? 0 
+      : _buildTimesWindow.reduce((a, b) => a + b) / _buildTimesWindow.length;
 
   @override
   Widget build(BuildContext context) {
@@ -54,34 +56,42 @@ class _PerformanceHUDState extends State<PerformanceHUD> {
       children: [
         widget.child,
         Positioned(
-          top: 40,
-          right: 10,
+          top: MediaQuery.of(context).padding.top + 10,
+          right: 15,
           child: IgnorePointer(
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               decoration: BoxDecoration(
-                //  color: Colors.black.withOpacity(0.7),
-                borderRadius: BorderRadius.circular(4),
+                color: Colors.black.withOpacity(0.8),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.white24, width: 0.5),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  // Text(
-                  //   'FPS: ${_fps.toStringAsFixed(1)}',
-                  //   style: const TextStyle(color: Colors.green, fontSize: 10, fontWeight: FontWeight.bold),
-                  // ),
-                  // Text(
-                  //   'Build: ${_buildTime.toStringAsFixed(2)}ms',
-                  //   style: const TextStyle(color: Colors.white, fontSize: 10),
-                  // ),
-                  // Text(
-                  //   'Avg: ${_avgBuildTime.toStringAsFixed(2)}ms',
-                  //   style: const TextStyle(color: Colors.white, fontSize: 10),
-                  // ),
+                  _buildMetric('FPS', _fps.toStringAsFixed(1), _fps > 55 ? Colors.greenAccent : Colors.orangeAccent),
+                  const SizedBox(height: 4),
+                  _buildMetric('Build Avg', '${_avgBuildTime.toStringAsFixed(2)}ms', _avgBuildTime < 8 ? Colors.blueAccent : Colors.redAccent),
                 ],
               ),
             ),
           ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMetric(String label, String value, Color color) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          '$label: ',
+          style: const TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.normal, decoration: TextDecoration.none),
+        ),
+        Text(
+          value,
+          style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.bold, decoration: TextDecoration.none),
         ),
       ],
     );

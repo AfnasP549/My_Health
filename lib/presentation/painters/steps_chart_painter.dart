@@ -32,14 +32,14 @@ class StepsChartPainter extends CustomPainter {
     // Find max steps for Y scaling
     int maxSteps = 10;
     for (int i = 0; i < steps.length; i++) {
-        if (steps[i].count > maxSteps) maxSteps = steps[i].count;
+      if (steps[i].count > maxSteps) maxSteps = steps[i].count;
     }
     final double yScale = height / (maxSteps * 1.2);
 
     // Draw grid lines
     for (int i = 0; i <= 4; i++) {
-        final y = height - (i * height / 4);
-        canvas.drawLine(Offset(0, y), Offset(width, y), _axisPaint);
+      final y = height - (i * height / 4);
+      canvas.drawLine(Offset(0, y), Offset(width, y), _axisPaint);
     }
 
     // Draw bars
@@ -49,13 +49,12 @@ class StepsChartPainter extends CustomPainter {
       final step = steps[i];
       final msOffset = step.timestamp.difference(windowStart).inMilliseconds;
       
-      if (msOffset < 0) continue;
+      if (msOffset < 0 || msOffset > totalTimeMs) continue;
 
       final x = (msOffset / totalTimeMs) * width;
       final barHeight = step.count * yScale;
 
-      // Zero-allocation: Rect.fromLTWH is a construction but we can't avoid all Rects, 
-      // though we reuse the Paint object.
+      // Draw standard rect bar
       canvas.drawRect(
         Rect.fromLTWH(x - barWidth / 2, height - barHeight, barWidth, barHeight),
         _barPaint,
@@ -65,6 +64,7 @@ class StepsChartPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant StepsChartPainter oldDelegate) {
+    // Avoid redraw if data hasn't changed.
     return oldDelegate.steps != steps || 
            oldDelegate.windowStart != windowStart || 
            oldDelegate.windowEnd != windowEnd;

@@ -22,8 +22,6 @@ class HeartRatePainter extends CustomPainter {
     ..color = Colors.red.withOpacity(0.1)
     ..style = PaintingStyle.fill;
 
-  static final Path _path = Path();
-
   @override
   void paint(Canvas canvas, Size size) {
     if (heartRates.isEmpty) return;
@@ -32,7 +30,7 @@ class HeartRatePainter extends CustomPainter {
     final double height = size.height;
     final double totalTimeMs = windowEnd.difference(windowStart).inMilliseconds.toDouble();
 
-    // Use standard BPM scaling (40bpm to 200bpm or auto-scale)
+    // Standard BPM scaling (40bpm to 200bpm or auto-scale)
     int maxHr = 150;
     int minHr = 60;
     for (int i = 0; i < heartRates.length; i++) {
@@ -43,35 +41,37 @@ class HeartRatePainter extends CustomPainter {
     final double hrRange = (maxHr - minHr).toDouble().clamp(20.0, 500.0);
     final double yScale = height / hrRange;
 
-    _path.reset();
+    // Use a fresh path each frame (Paths can be heavy if reused incorrectly across frames)
+    final Path path = Path();
     bool first = true;
 
     for (int i = 0; i < heartRates.length; i++) {
         final hr = heartRates[i];
         final msOffset = hr.timestamp.difference(windowStart).inMilliseconds;
         
-        if (msOffset < 0) continue;
+        if (msOffset < 0 || msOffset > totalTimeMs) continue;
 
         final x = (msOffset / totalTimeMs) * width;
         final y = height - ((hr.bpm - minHr) * yScale);
 
         if (first) {
-            _path.moveTo(x, y);
+            path.moveTo(x, y);
             first = false;
         } else {
-            _path.lineTo(x, y);
+            path.lineTo(x, y);
         }
     }
 
-    canvas.drawPath(_path, _linePaint);
-    
-    // Gradient / Area fill below path
     if (!first) {
-        final currentPath = Path()..addPath(_path, Offset.zero); // Temporary for fill logic
-        currentPath.lineTo(width, height);
-        currentPath.lineTo(0, height);
-        currentPath.close();
-        canvas.drawPath(currentPath, _areaPaint);
+        // Line
+        canvas.drawPath(path, _linePaint);
+
+        // Fill below
+        final Path fillPath = Path.from(path);
+        fillPath.lineTo(width, height);
+        fillPath.lineTo(0, height);
+        fillPath.close();
+        canvas.drawPath(fillPath, _areaPaint);
     }
   }
 

@@ -5,8 +5,8 @@ import '../viewmodels/permissions_viewmodel.dart';
 import '../widgets/permissions_banner.dart';
 import '../widgets/performance_hud.dart';
 import '../widgets/summary_card.dart';
-import '../painters/steps_chart_painter.dart';
-import '../painters/heart_rate_painter.dart';
+import '../widgets/charts/interactive_steps_chart.dart';
+import '../widgets/charts/interactive_heart_rate_chart.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -46,7 +46,7 @@ class DashboardScreen extends ConsumerWidget {
               ),
             ),
           ),
-          chart,
+          ClipRect(child: chart),
         ],
       ),
     );
@@ -81,42 +81,42 @@ class DashboardScreen extends ConsumerWidget {
                 padding: const EdgeInsets.all(20),
                 child: Column(
                   children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: SummaryCard(
-                            title: 'Today\'s Steps',
-                            value: isAuthorized ? healthState.todayStepsCount.toString() : '--',
-                            icon: Icons.directions_walk,
-                            color: Colors.blue,
+                    IntrinsicHeight(
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Expanded(
+                            child: SummaryCard(
+                              title: 'Today\'s Steps',
+                              value: isAuthorized ? healthState.todayStepsCount.toString() : '--',
+                              icon: Icons.directions_walk,
+                              color: Colors.blue,
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: SummaryCard(
-                            title: 'Heart Rate',
-                            value: isAuthorized && healthState.lastHeartRate != null 
-                                ? '${healthState.lastHeartRate!.bpm}' 
-                                : '--',
-                            subtitle: isAuthorized ? _getTimeAgo(healthState.lastHeartRate?.timestamp) : 'No permission',
-                            icon: Icons.favorite,
-                            color: Colors.red,
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: SummaryCard(
+                              title: 'Heart Rate',
+                              value: isAuthorized && healthState.lastHeartRate != null 
+                                  ? '${healthState.lastHeartRate!.bpm}' 
+                                  : '--',
+                              subtitle: isAuthorized ? _getTimeAgo(healthState.lastHeartRate?.timestamp) : 'No permission',
+                              icon: Icons.favorite,
+                              color: Colors.red,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                     const SizedBox(height: 24),
                     _buildChartContainer(
                       'Steps History (Last 60m)', 
                       Colors.blue.shade50,
                       isAuthorized 
-                        ? CustomPaint(
-                            size: Size.infinite,
-                            painter: StepsChartPainter(
-                              steps: healthState.steps,
-                              windowStart: hourAgo,
-                              windowEnd: now,
-                            ),
+                        ? InteractiveStepsChart(
+                            steps: healthState.steps,
+                            windowStart: hourAgo,
+                            windowEnd: now,
                           )
                         : const Center(child: Text("Permissions disabled", style: TextStyle(color: Colors.black26))),
                     ),
@@ -125,13 +125,10 @@ class DashboardScreen extends ConsumerWidget {
                       'Heart Rate Rolling', 
                       Colors.red.shade50,
                       isAuthorized
-                        ? CustomPaint(
-                            size: Size.infinite,
-                            painter: HeartRatePainter(
-                              heartRates: healthState.heartRates,
-                              windowStart: hourAgo,
-                              windowEnd: now,
-                            ),
+                        ? InteractiveHeartRateChart(
+                            heartRates: healthState.heartRates,
+                            windowStart: hourAgo,
+                            windowEnd: now,
                           )
                         : const Center(child: Text("Permissions disabled", style: TextStyle(color: Colors.black26))),
                     ),
