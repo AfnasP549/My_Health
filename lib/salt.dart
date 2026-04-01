@@ -1,1 +1,1 @@
-const String appSalt = 'bea9874b974c07ff7e4250f9c1a680088ba5d294b75cb1a52c5c57e8eff4ec65';
+const String appSalt = 'dbd51e8a5f18b606a2ac95e1202d2b7737e6d97687470a8271a629681cb131a4911ec';
