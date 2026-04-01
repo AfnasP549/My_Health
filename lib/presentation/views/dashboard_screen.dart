@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 import '../viewmodels/health_viewmodel.dart';
 import '../widgets/permissions_banner.dart';
 import '../widgets/performance_hud.dart';
 import '../widgets/summary_card.dart';
+import '../painters/steps_chart_painter.dart';
+import '../painters/heart_rate_painter.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -16,9 +17,42 @@ class DashboardScreen extends ConsumerWidget {
     return "${diff.inMinutes}m ago";
   }
 
+  Widget _buildChartContainer(String label, Color bgColor, Widget chart) {
+    return Container(
+      width: double.infinity,
+      height: 200,
+      padding: const EdgeInsets.fromLTRB(12, 40, 12, 12),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.black12),
+      ),
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Positioned(
+            top: -28,
+            left: 0,
+            child: Text(
+              label,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: Colors.black45,
+              ),
+            ),
+          ),
+          chart,
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final healthState = ref.watch(healthViewModelProvider);
+    final now = DateTime.now();
+    final hourAgo = now.subtract(const Duration(minutes: 60));
 
     return PerformanceHUD(
       child: Scaffold(
@@ -65,49 +99,37 @@ class DashboardScreen extends ConsumerWidget {
                       ],
                     ),
                     const SizedBox(height: 24),
-                    _buildChartContainer('Steps History (Last 60m)', Colors.blue.shade50),
+                    _buildChartContainer(
+                      'Steps History (Last 60m)', 
+                      Colors.blue.shade50,
+                      CustomPaint(
+                        size: Size.infinite,
+                        painter: StepsChartPainter(
+                          steps: healthState.steps,
+                          windowStart: hourAgo,
+                          windowEnd: now,
+                        ),
+                      ),
+                    ),
                     const SizedBox(height: 16),
-                    _buildChartContainer('Heart Rate Rolling', Colors.red.shade50),
+                    _buildChartContainer(
+                      'Heart Rate Rolling', 
+                      Colors.red.shade50,
+                      CustomPaint(
+                        size: Size.infinite,
+                        painter: HeartRatePainter(
+                          heartRates: healthState.heartRates,
+                          windowStart: hourAgo,
+                          windowEnd: now,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildChartContainer(String label, Color bgColor) {
-    return Container(
-      width: double.infinity,
-      height: 200,
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.black12),
-      ),
-      child: Stack(
-        children: [
-          Positioned(
-            top: 12,
-            left: 12,
-            child: Text(
-              label,
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                color: Colors.black45,
-              ),
-            ),
-          ),
-          const Center(
-            child: Text(
-              'Chart coming in next step...',
-              style: TextStyle(color: Colors.black26),
-            ),
-          ),
-        ],
       ),
     );
   }
