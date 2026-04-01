@@ -55,7 +55,7 @@ class HealthViewModel extends StateNotifier<HealthDataState> {
     _hrSub = repo.heartRateStream.listen((newHr) {
       _processNewHr(newHr);
     });
-    
+
     // Start the repository's internal listener/poller (using 10s as per task repo)
     repo.startListening(const Duration(seconds: 10));
   }
@@ -64,51 +64,59 @@ class HealthViewModel extends StateNotifier<HealthDataState> {
     final repo = ref.read(healthRepositoryProvider);
     final now = DateTime.now();
     final startOfDay = DateTime(now.year, now.month, now.day);
-    
+
     final steps = await repo.getSteps(startOfDay, now);
-    final hr = await repo.getHeartRate(now.subtract(const Duration(hours: 1)), now);
-    
+    final hr = await repo.getHeartRate(
+      now.subtract(const Duration(hours: 1)),
+      now,
+    );
+
     state = state.copyWith(
       steps: steps,
       heartRates: hr,
-      todayStepsCount: steps.fold(0, (sum, item) => sum + item.count),
+      todayStepsCount: steps.fold(0, (sum, item) => sum! + item.count),
       lastHeartRate: hr.isEmpty ? null : hr.last,
     );
   }
 
   void _processNewSteps(List<StepsRaw> newSteps) {
     if (newSteps.isEmpty) return;
-    
+
     // Merge and deduplicate logic (using map by timestamp)
-    final existingSteps = {for (var s in state.steps) s.timestamp.toIso8601String(): s};
+    final existingSteps = {
+      for (var s in state.steps) s.timestamp.toIso8601String(): s,
+    };
     for (var s in newSteps) {
       existingSteps[s.timestamp.toIso8601String()] = s;
     }
-    
+
     final merged = existingSteps.values.toList()
       ..sort((a, b) => a.timestamp.compareTo(b.timestamp));
-    
+
     // Keep last 60 minutes window as per requirement
     final hourAgo = DateTime.now().subtract(const Duration(minutes: 60));
     final windowed = merged.where((s) => s.timestamp.isAfter(hourAgo)).toList();
 
     state = state.copyWith(
       steps: windowed,
-      todayStepsCount: state.todayStepsCount + newSteps.fold(0, (sum, s) => sum + s.count),
+      todayStepsCount:
+          state.todayStepsCount + newSteps.fold(0, (sum, s) => sum + s.count),
     );
   }
 
   void _processNewHr(List<HrRaw> newHr) {
     if (newHr.isEmpty) return;
 
-    final existingHr = {for (var h in state.heartRates) h.timestamp.toIso8601String(): h};
+    final existingHr = {
+      for (var h in state.heartRates) h.timestamp.toIso8601String(): h,
+    };
     for (var h in newHr) {
       existingHr[h.timestamp.toIso8601String()] = h;
     }
 
     final merged = existingHr.values.toList()
       ..sort((a, b) => a.timestamp.compareTo(b.timestamp));
-      
+
     // Point decimation or resampling would happen here for large counts in later steps.
     // For now, simple window maintenance.
     final hourAgo = DateTime.now().subtract(const Duration(minutes: 60));
@@ -129,6 +137,7 @@ class HealthViewModel extends StateNotifier<HealthDataState> {
   }
 }
 
-final healthViewModelProvider = StateNotifierProvider<HealthViewModel, HealthDataState>((ref) {
-  return HealthViewModel(ref);
-});
+final healthViewModelProvider =
+    StateNotifierProvider<HealthViewModel, HealthDataState>((ref) {
+      return HealthViewModel(ref);
+    });
