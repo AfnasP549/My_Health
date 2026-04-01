@@ -74,7 +74,7 @@ class HealthViewModel extends StateNotifier<HealthDataState> {
     state = state.copyWith(
       steps: steps,
       heartRates: hr,
-      todayStepsCount: steps.fold(0, (sum, item) => sum! + item.count),
+      todayStepsCount: steps.fold<int>(0, (sum, item) => sum + item.count),
       lastHeartRate: hr.isEmpty ? null : hr.last,
     );
   }

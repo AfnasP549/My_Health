@@ -12,8 +12,8 @@ class DashboardScreen extends ConsumerWidget {
   String _getTimeAgo(DateTime? time) {
     if (time == null) return "Never";
     final diff = DateTime.now().difference(time);
-    if (diff.inSeconds < 60) return "\${diff.inSeconds}s ago";
-    return "\${diff.inMinutes}m ago";
+    if (diff.inSeconds < 60) return "${diff.inSeconds}s ago";
+    return "${diff.inMinutes}m ago";
   }
 
   @override
@@ -55,7 +55,7 @@ class DashboardScreen extends ConsumerWidget {
                           child: SummaryCard(
                             title: 'Heart Rate',
                             value: healthState.lastHeartRate != null 
-                                ? '\${healthState.lastHeartRate!.bpm}' 
+                                ? '${healthState.lastHeartRate!.bpm}' 
                                 : '--',
                             subtitle: _getTimeAgo(healthState.lastHeartRate?.timestamp),
                             icon: Icons.favorite,

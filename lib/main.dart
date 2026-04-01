@@ -8,7 +8,9 @@ void main() {
   runApp(
     ProviderScope(
       overrides: [
-        healthRepositoryProvider.overrideWithValue(SimHealthRepository()..startListening(const Duration(seconds: 5))),
+        healthRepositoryProvider.overrideWithValue(
+          SimHealthRepository()..startListening(const Duration(seconds: 5)),
+        ),
       ],
       child: const MyApp(),
     ),
@@ -21,6 +23,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
+      debugShowCheckedModeBanner: false,
       home: PermissionsScreen(),
     );
   }

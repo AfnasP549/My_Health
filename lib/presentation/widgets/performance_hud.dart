@@ -24,7 +24,7 @@ class _PerformanceHUDState extends State<PerformanceHUD> {
 
   void _onFrame(Duration timestamp) {
     if (!mounted) return;
-    
+
     final now = DateTime.now();
     final frameTime = now.difference(_lastFrame).inMilliseconds;
     if (frameTime > 0) {
@@ -44,8 +44,8 @@ class _PerformanceHUDState extends State<PerformanceHUD> {
     SchedulerBinding.instance.addPostFrameCallback(_onFrame);
   }
 
-  double get _avgBuildTime => _buildTimes.isEmpty 
-      ? 0 
+  double get _avgBuildTime => _buildTimes.isEmpty
+      ? 0
       : _buildTimes.reduce((a, b) => a + b) / _buildTimes.length;
 
   @override
@@ -60,24 +60,24 @@ class _PerformanceHUDState extends State<PerformanceHUD> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.7),
+                //  color: Colors.black.withOpacity(0.7),
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text(
-                    'FPS: \${_fps.toStringAsFixed(1)}',
-                    style: const TextStyle(color: Colors.green, fontSize: 10, fontWeight: FontWeight.bold),
-                  ),
-                  Text(
-                    'Build: \${_buildTime.toStringAsFixed(2)}ms',
-                    style: const TextStyle(color: Colors.white, fontSize: 10),
-                  ),
-                  Text(
-                    'Avg: \${_avgBuildTime.toStringAsFixed(2)}ms',
-                    style: const TextStyle(color: Colors.white, fontSize: 10),
-                  ),
+                  // Text(
+                  //   'FPS: ${_fps.toStringAsFixed(1)}',
+                  //   style: const TextStyle(color: Colors.green, fontSize: 10, fontWeight: FontWeight.bold),
+                  // ),
+                  // Text(
+                  //   'Build: ${_buildTime.toStringAsFixed(2)}ms',
+                  //   style: const TextStyle(color: Colors.white, fontSize: 10),
+                  // ),
+                  // Text(
+                  //   'Avg: ${_avgBuildTime.toStringAsFixed(2)}ms',
+                  //   style: const TextStyle(color: Colors.white, fontSize: 10),
+                  // ),
                 ],
               ),
             ),
