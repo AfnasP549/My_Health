@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'presentation/views/permissions_screen.dart';
 import 'presentation/providers/providers.dart';
 import 'data/repositories/sim_health_repository.dart';
+import 'presentation/views/dashboard_screen.dart';
+import 'presentation/views/permissions_screen.dart';
 
 void main() {
+  final repo = SimHealthRepository();
   runApp(
     ProviderScope(
       overrides: [
         healthRepositoryProvider.overrideWithValue(
-          SimHealthRepository()..startListening(const Duration(seconds: 5)),
+          repo..startListening(const Duration(seconds: 5)),
         ),
       ],
       child: const MyApp(),

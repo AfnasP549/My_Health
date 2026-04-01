@@ -1,38 +1,60 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import '../providers/providers.dart';
 
-class PermissionsNotifier extends StateNotifier<AsyncValue<bool>> {
-  PermissionsNotifier(this.ref) : super(const AsyncValue.loading()) {
+enum UIState {
+  initial,
+  requesting,
+  authorized,
+  denied
+}
+
+class PermissionsNotifier extends StateNotifier<UIState> {
+  PermissionsNotifier(this.ref) : super(UIState.initial) {
     checkPermissions();
   }
 
   final Ref ref;
 
   Future<void> checkPermissions() async {
-    state = const AsyncValue.loading();
     try {
       final repo = ref.read(healthRepositoryProvider);
       final hasPermission = await repo.checkPermissions();
-      state = AsyncValue.data(hasPermission);
-    } catch (e, st) {
-      state = AsyncValue.error(e, st);
+      if (hasPermission) {
+        state = UIState.authorized;
+      } else {
+        state = UIState.requesting;
+      }
+    } catch (e) {
+      state = UIState.requesting;
     }
   }
 
   Future<void> requestPermissions() async {
-    state = const AsyncValue.loading();
+    final repo = ref.read(healthRepositoryProvider);
     try {
-      final repo = ref.read(healthRepositoryProvider);
       final granted = await repo.requestPermissions();
-      state = AsyncValue.data(granted);
-    } catch (e, st) {
-      state = AsyncValue.error(e, st);
+      if (granted) {
+        state = UIState.authorized;
+      } else {
+        state = UIState.denied;
+      }
+    } catch (e) {
+      state = UIState.denied;
     }
+  }
+
+  void debugSkipPermissions() {
+    state = UIState.authorized;
+  }
+
+  void denyPermissions() {
+    state = UIState.denied;
   }
 }
 
 final permissionsProvider =
-    StateNotifierProvider<PermissionsNotifier, AsyncValue<bool>>((ref) {
-      return PermissionsNotifier(ref);
-    });
+    StateNotifierProvider<PermissionsNotifier, UIState>((ref) {
+  return PermissionsNotifier(ref);
+});

@@ -9,11 +9,16 @@ class SimHealthRepository implements HealthRepository {
   final SimSource _simSource;
   bool _isSimulationMode = true;
 
-  @override
-  Future<bool> checkPermissions() async => true;
+  bool _permissionsGranted = false;
 
   @override
-  Future<bool> requestPermissions() async => true;
+  Future<bool> checkPermissions() async => _permissionsGranted;
+
+  @override
+  Future<bool> requestPermissions() async {
+    _permissionsGranted = true;
+    return true;
+  }
 
   @override
   Future<List<StepsRaw>> getSteps(DateTime start, DateTime end) async {

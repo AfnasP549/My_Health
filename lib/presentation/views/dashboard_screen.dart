@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../viewmodels/health_viewmodel.dart';
+import '../viewmodels/permissions_viewmodel.dart';
 import '../widgets/permissions_banner.dart';
 import '../widgets/performance_hud.dart';
 import '../widgets/summary_card.dart';
@@ -12,7 +13,10 @@ class DashboardScreen extends ConsumerWidget {
 
   String _getTimeAgo(DateTime? time) {
     if (time == null) return "Never";
-    final diff = DateTime.now().difference(time);
+    // Using absolute diff to handle minor timestamp drift/future timestamps from sensors
+    final diff = DateTime.now().difference(time).abs();
+    
+    if (diff.inSeconds < 1) return "Just now";
     if (diff.inSeconds < 60) return "${diff.inSeconds}s ago";
     return "${diff.inMinutes}m ago";
   }
@@ -51,6 +55,9 @@ class DashboardScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final healthState = ref.watch(healthViewModelProvider);
+    final permissionState = ref.watch(permissionsProvider);
+    final isAuthorized = permissionState == UIState.authorized;
+
     final now = DateTime.now();
     final hourAgo = now.subtract(const Duration(minutes: 60));
 
@@ -79,7 +86,7 @@ class DashboardScreen extends ConsumerWidget {
                         Expanded(
                           child: SummaryCard(
                             title: 'Today\'s Steps',
-                            value: healthState.todayStepsCount.toString(),
+                            value: isAuthorized ? healthState.todayStepsCount.toString() : '--',
                             icon: Icons.directions_walk,
                             color: Colors.blue,
                           ),
@@ -88,10 +95,10 @@ class DashboardScreen extends ConsumerWidget {
                         Expanded(
                           child: SummaryCard(
                             title: 'Heart Rate',
-                            value: healthState.lastHeartRate != null 
+                            value: isAuthorized && healthState.lastHeartRate != null 
                                 ? '${healthState.lastHeartRate!.bpm}' 
                                 : '--',
-                            subtitle: _getTimeAgo(healthState.lastHeartRate?.timestamp),
+                            subtitle: isAuthorized ? _getTimeAgo(healthState.lastHeartRate?.timestamp) : 'No permission',
                             icon: Icons.favorite,
                             color: Colors.red,
                           ),
@@ -102,27 +109,31 @@ class DashboardScreen extends ConsumerWidget {
                     _buildChartContainer(
                       'Steps History (Last 60m)', 
                       Colors.blue.shade50,
-                      CustomPaint(
-                        size: Size.infinite,
-                        painter: StepsChartPainter(
-                          steps: healthState.steps,
-                          windowStart: hourAgo,
-                          windowEnd: now,
-                        ),
-                      ),
+                      isAuthorized 
+                        ? CustomPaint(
+                            size: Size.infinite,
+                            painter: StepsChartPainter(
+                              steps: healthState.steps,
+                              windowStart: hourAgo,
+                              windowEnd: now,
+                            ),
+                          )
+                        : const Center(child: Text("Permissions disabled", style: TextStyle(color: Colors.black26))),
                     ),
                     const SizedBox(height: 16),
                     _buildChartContainer(
                       'Heart Rate Rolling', 
                       Colors.red.shade50,
-                      CustomPaint(
-                        size: Size.infinite,
-                        painter: HeartRatePainter(
-                          heartRates: healthState.heartRates,
-                          windowStart: hourAgo,
-                          windowEnd: now,
-                        ),
-                      ),
+                      isAuthorized
+                        ? CustomPaint(
+                            size: Size.infinite,
+                            painter: HeartRatePainter(
+                              heartRates: healthState.heartRates,
+                              windowStart: hourAgo,
+                              windowEnd: now,
+                            ),
+                          )
+                        : const Center(child: Text("Permissions disabled", style: TextStyle(color: Colors.black26))),
                     ),
                   ],
                 ),
