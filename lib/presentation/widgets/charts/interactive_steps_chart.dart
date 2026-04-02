@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import '../../../domain/entities/health_data.dart';
 import '../../painters/steps_chart_painter.dart';
@@ -32,8 +34,10 @@ class _InteractiveStepsChartState extends State<InteractiveStepsChart> {
           _horizontalOffset += details.focalPointDelta.dx;
         });
       },
-      onLongPressStart: (details) => setState(() => _touchPosition = details.localPosition),
-      onLongPressMoveUpdate: (details) => setState(() => _touchPosition = details.localPosition),
+      onLongPressStart: (details) =>
+          setState(() => _touchPosition = details.localPosition),
+      onLongPressMoveUpdate: (details) =>
+          setState(() => _touchPosition = details.localPosition),
       onLongPressEnd: (_) => setState(() => _touchPosition = null),
       child: Stack(
         children: [
@@ -63,15 +67,19 @@ class _InteractiveStepsChartState extends State<InteractiveStepsChart> {
 
     final size = MediaQuery.of(context).size;
     final chartWidth = size.width - 64; // Approx padding
-    final totalMs = widget.windowEnd.difference(widget.windowStart).inMilliseconds;
-    
+    final totalMs = widget.windowEnd
+        .difference(widget.windowStart)
+        .inMilliseconds;
+
     // Find nearest point
     final xPercent = _touchPosition!.dx / chartWidth;
-    final targetTime = widget.windowStart.add(Duration(milliseconds: (totalMs * xPercent).toInt()));
-    
+    final targetTime = widget.windowStart.add(
+      Duration(milliseconds: (totalMs * xPercent).toInt()),
+    );
+
     StepsRaw? nearest;
     int minDiff = 999999999;
-    
+
     for (var s in widget.steps) {
       final diff = s.timestamp.difference(targetTime).inMilliseconds.abs();
       if (diff < minDiff) {

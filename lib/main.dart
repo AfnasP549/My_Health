@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'presentation/providers/providers.dart';
-import 'data/repositories/sim_health_repository.dart';
 import 'presentation/views/splash_screen.dart';
 
 void main() {
@@ -17,17 +15,7 @@ void main() {
     ),
   );
 
-  final repo = SimHealthRepository();
-  runApp(
-    ProviderScope(
-      overrides: [
-        healthRepositoryProvider.overrideWithValue(
-          repo..startListening(const Duration(seconds: 5)),
-        ),
-      ],
-      child: const MyApp(),
-    ),
-  );
+  runApp(const ProviderScope(child: MyApp()));
 }
 
 class MyApp extends StatelessWidget {
@@ -35,9 +23,14 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: SplashScreen(),
+      title: 'My Health',
+      theme: ThemeData(
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+      ),
+      home: const SplashScreen(),
     );
   }
 }

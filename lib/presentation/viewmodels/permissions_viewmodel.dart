@@ -1,14 +1,8 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import '../providers/providers.dart';
 
-enum UIState {
-  initial,
-  requesting,
-  authorized,
-  denied
-}
+enum UIState { initial, requesting, authorized, denied }
 
 class PermissionsNotifier extends StateNotifier<UIState> {
   PermissionsNotifier(this.ref) : super(UIState.initial) {
@@ -54,7 +48,8 @@ class PermissionsNotifier extends StateNotifier<UIState> {
   }
 }
 
-final permissionsProvider =
-    StateNotifierProvider<PermissionsNotifier, UIState>((ref) {
-  return PermissionsNotifier(ref);
-});
+final permissionsProvider = StateNotifierProvider<PermissionsNotifier, UIState>(
+  (ref) {
+    return PermissionsNotifier(ref);
+  },
+);

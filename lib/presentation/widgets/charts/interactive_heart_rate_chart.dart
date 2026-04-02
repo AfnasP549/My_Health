@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import '../../../domain/entities/health_data.dart';
 import '../../painters/heart_rate_painter.dart';
@@ -15,7 +17,8 @@ class InteractiveHeartRateChart extends StatefulWidget {
   });
 
   @override
-  State<InteractiveHeartRateChart> createState() => _InteractiveHeartRateChartState();
+  State<InteractiveHeartRateChart> createState() =>
+      _InteractiveHeartRateChartState();
 }
 
 class _InteractiveHeartRateChartState extends State<InteractiveHeartRateChart> {
@@ -32,8 +35,10 @@ class _InteractiveHeartRateChartState extends State<InteractiveHeartRateChart> {
           _horizontalOffset += details.focalPointDelta.dx;
         });
       },
-      onLongPressStart: (details) => setState(() => _touchPosition = details.localPosition),
-      onLongPressMoveUpdate: (details) => setState(() => _touchPosition = details.localPosition),
+      onLongPressStart: (details) =>
+          setState(() => _touchPosition = details.localPosition),
+      onLongPressMoveUpdate: (details) =>
+          setState(() => _touchPosition = details.localPosition),
       onLongPressEnd: (_) => setState(() => _touchPosition = null),
       child: Stack(
         children: [
@@ -63,14 +68,18 @@ class _InteractiveHeartRateChartState extends State<InteractiveHeartRateChart> {
 
     final size = MediaQuery.of(context).size;
     final chartWidth = size.width - 64;
-    final totalMs = widget.windowEnd.difference(widget.windowStart).inMilliseconds;
-    
+    final totalMs = widget.windowEnd
+        .difference(widget.windowStart)
+        .inMilliseconds;
+
     final xPercent = _touchPosition!.dx / chartWidth;
-    final targetTime = widget.windowStart.add(Duration(milliseconds: (totalMs * xPercent).toInt()));
-    
+    final targetTime = widget.windowStart.add(
+      Duration(milliseconds: (totalMs * xPercent).toInt()),
+    );
+
     HrRaw? nearest;
     int minDiff = 999999999;
-    
+
     for (var h in widget.heartRates) {
       final diff = h.timestamp.difference(targetTime).inMilliseconds.abs();
       if (diff < minDiff) {

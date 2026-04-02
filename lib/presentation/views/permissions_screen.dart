@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter/foundation.dart';
 import '../viewmodels/permissions_viewmodel.dart';
 import 'dashboard_screen.dart';
 
@@ -13,7 +12,8 @@ class PermissionsScreen extends ConsumerWidget {
 
     // If we've already asked (Authorized or Denied), show the dashboard.
     // Dashboard and its banner handle the internal "permission denied" state.
-    if (permissionState == UIState.authorized || permissionState == UIState.denied) {
+    if (permissionState == UIState.authorized ||
+        permissionState == UIState.denied) {
       return const DashboardScreen();
     }
 
@@ -46,7 +46,7 @@ class PermissionsScreen extends ConsumerWidget {
           const Text(
             'Keep Track of Your Health',
             style: TextStyle(
-              fontSize: 24, 
+              fontSize: 24,
               fontWeight: FontWeight.bold,
               letterSpacing: -0.5,
             ),
@@ -56,11 +56,7 @@ class PermissionsScreen extends ConsumerWidget {
           const Text(
             'We need access to your activity and heart rate to give you a real-time dashboard. Your data remains on-device and completely offline.',
             textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.black54,
-              height: 1.5,
-            ),
+            style: TextStyle(fontSize: 16, color: Colors.black54, height: 1.5),
           ),
           const SizedBox(height: 48),
           SizedBox(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:my_health/presentation/providers/providers.dart';
 import '../viewmodels/health_viewmodel.dart';
 import '../viewmodels/permissions_viewmodel.dart';
 import '../widgets/permissions_banner.dart';
@@ -15,7 +16,7 @@ class DashboardScreen extends ConsumerWidget {
     if (time == null) return "Never";
     // Using absolute diff to handle minor timestamp drift/future timestamps from sensors
     final diff = DateTime.now().difference(time).abs();
-    
+
     if (diff.inSeconds < 1) return "Just now";
     if (diff.inSeconds < 60) return "${diff.inSeconds}s ago";
     return "${diff.inMinutes}m ago";
@@ -66,9 +67,38 @@ class DashboardScreen extends ConsumerWidget {
         backgroundColor: Colors.grey.shade50,
         appBar: AppBar(
           title: const Text(
-            'Health Realtime',
+            'My Health',
             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
           ),
+          actions: [
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: IconButton(
+                onPressed: () {
+                  final isSim = ref.read(simModeProvider);
+                  ref.read(simModeProvider.notifier).state = !isSim;
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        !isSim
+                            ? 'Switched to Simulated Data'
+                            : 'Switched to Real Data',
+                      ),
+                      duration: const Duration(seconds: 2),
+                    ),
+                  );
+                },
+                icon: Icon(
+                  ref.watch(simModeProvider) ? Icons.bug_report : Icons.sensors,
+                  color: ref.watch(simModeProvider)
+                      ? Colors.orange
+                      : Colors.blue,
+                ),
+                tooltip: 'Toggle Simulated Data',
+              ),
+            ),
+          ],
           backgroundColor: Colors.white,
           foregroundColor: Colors.black,
           elevation: 0,
@@ -88,7 +118,9 @@ class DashboardScreen extends ConsumerWidget {
                           Expanded(
                             child: SummaryCard(
                               title: 'Today\'s Steps',
-                              value: isAuthorized ? healthState.todayStepsCount.toString() : '--',
+                              value: isAuthorized
+                                  ? healthState.todayStepsCount.toString()
+                                  : '--',
                               icon: Icons.directions_walk,
                               color: Colors.blue,
                             ),
@@ -97,10 +129,16 @@ class DashboardScreen extends ConsumerWidget {
                           Expanded(
                             child: SummaryCard(
                               title: 'Heart Rate',
-                              value: isAuthorized && healthState.lastHeartRate != null 
-                                  ? '${healthState.lastHeartRate!.bpm}' 
+                              value:
+                                  isAuthorized &&
+                                      healthState.lastHeartRate != null
+                                  ? '${healthState.lastHeartRate!.bpm}'
                                   : '--',
-                              subtitle: isAuthorized ? _getTimeAgo(healthState.lastHeartRate?.timestamp) : 'No permission',
+                              subtitle: isAuthorized
+                                  ? _getTimeAgo(
+                                      healthState.lastHeartRate?.timestamp,
+                                    )
+                                  : 'No permission',
                               icon: Icons.favorite,
                               color: Colors.red,
                             ),
@@ -110,27 +148,37 @@ class DashboardScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: 24),
                     _buildChartContainer(
-                      'Steps History (Last 60m)', 
+                      'Steps History (Last 60m)',
                       Colors.blue.shade50,
-                      isAuthorized 
-                        ? InteractiveStepsChart(
-                            steps: healthState.steps,
-                            windowStart: hourAgo,
-                            windowEnd: now,
-                          )
-                        : const Center(child: Text("Permissions disabled", style: TextStyle(color: Colors.black26))),
+                      isAuthorized
+                          ? InteractiveStepsChart(
+                              steps: healthState.steps,
+                              windowStart: hourAgo,
+                              windowEnd: now,
+                            )
+                          : const Center(
+                              child: Text(
+                                "Permissions disabled",
+                                style: TextStyle(color: Colors.black26),
+                              ),
+                            ),
                     ),
                     const SizedBox(height: 16),
                     _buildChartContainer(
-                      'Heart Rate Rolling', 
+                      'Heart Rate Rolling',
                       Colors.red.shade50,
                       isAuthorized
-                        ? InteractiveHeartRateChart(
-                            heartRates: healthState.heartRates,
-                            windowStart: hourAgo,
-                            windowEnd: now,
-                          )
-                        : const Center(child: Text("Permissions disabled", style: TextStyle(color: Colors.black26))),
+                          ? InteractiveHeartRateChart(
+                              heartRates: healthState.heartRates,
+                              windowStart: hourAgo,
+                              windowEnd: now,
+                            )
+                          : const Center(
+                              child: Text(
+                                "Permissions disabled",
+                                style: TextStyle(color: Colors.black26),
+                              ),
+                            ),
                     ),
                   ],
                 ),

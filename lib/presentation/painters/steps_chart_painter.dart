@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import '../../domain/entities/health_data.dart';
 
@@ -27,7 +29,10 @@ class StepsChartPainter extends CustomPainter {
 
     final double width = size.width;
     final double height = size.height;
-    final double totalTimeMs = windowEnd.difference(windowStart).inMilliseconds.toDouble();
+    final double totalTimeMs = windowEnd
+        .difference(windowStart)
+        .inMilliseconds
+        .toDouble();
 
     // Find max steps for Y scaling
     int maxSteps = 10;
@@ -43,12 +48,13 @@ class StepsChartPainter extends CustomPainter {
     }
 
     // Draw bars
-    final double barWidth = (width / 60) * 0.8; // Approx width for 1 min buckets
+    final double barWidth =
+        (width / 60) * 0.8; // Approx width for 1 min buckets
 
     for (int i = 0; i < steps.length; i++) {
       final step = steps[i];
       final msOffset = step.timestamp.difference(windowStart).inMilliseconds;
-      
+
       if (msOffset < 0 || msOffset > totalTimeMs) continue;
 
       final x = (msOffset / totalTimeMs) * width;
@@ -56,7 +62,12 @@ class StepsChartPainter extends CustomPainter {
 
       // Draw standard rect bar
       canvas.drawRect(
-        Rect.fromLTWH(x - barWidth / 2, height - barHeight, barWidth, barHeight),
+        Rect.fromLTWH(
+          x - barWidth / 2,
+          height - barHeight,
+          barWidth,
+          barHeight,
+        ),
         _barPaint,
       );
     }
@@ -65,8 +76,8 @@ class StepsChartPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant StepsChartPainter oldDelegate) {
     // Avoid redraw if data hasn't changed.
-    return oldDelegate.steps != steps || 
-           oldDelegate.windowStart != windowStart || 
-           oldDelegate.windowEnd != windowEnd;
+    return oldDelegate.steps != steps ||
+        oldDelegate.windowStart != windowStart ||
+        oldDelegate.windowEnd != windowEnd;
   }
 }

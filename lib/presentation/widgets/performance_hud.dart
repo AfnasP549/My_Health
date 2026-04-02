@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
@@ -29,11 +31,11 @@ class _PerformanceHUDState extends State<PerformanceHUD> {
     if (delta.inMilliseconds > 0) {
       setState(() {
         _fps = 1000 / delta.inMilliseconds;
-        
+
         // Use the Scheduler's internal measuring if available or estimate.
         // For local assertion, we measure the time between post-frame callbacks.
         _lastBuildTime = delta.inMicroseconds / 1000;
-        
+
         _buildTimesWindow.add(_lastBuildTime);
         if (_buildTimesWindow.length > 60) {
           _buildTimesWindow.removeAt(0);
@@ -46,8 +48,8 @@ class _PerformanceHUDState extends State<PerformanceHUD> {
     SchedulerBinding.instance.addPostFrameCallback(_tick);
   }
 
-  double get _avgBuildTime => _buildTimesWindow.isEmpty 
-      ? 0 
+  double get _avgBuildTime => _buildTimesWindow.isEmpty
+      ? 0
       : _buildTimesWindow.reduce((a, b) => a + b) / _buildTimesWindow.length;
 
   @override
@@ -56,7 +58,7 @@ class _PerformanceHUDState extends State<PerformanceHUD> {
       children: [
         widget.child,
         Positioned(
-          top: MediaQuery.of(context).padding.top + 10,
+          bottom: MediaQuery.of(context).padding.bottom + 10,
           right: 15,
           child: IgnorePointer(
             child: Container(
@@ -67,11 +69,19 @@ class _PerformanceHUDState extends State<PerformanceHUD> {
                 border: Border.all(color: Colors.white24, width: 0.5),
               ),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildMetric('FPS', _fps.toStringAsFixed(1), _fps > 55 ? Colors.greenAccent : Colors.orangeAccent),
+                  _buildMetric(
+                    'FPS',
+                    _fps.toStringAsFixed(1),
+                    _fps > 55 ? Colors.greenAccent : Colors.orangeAccent,
+                  ),
                   const SizedBox(height: 4),
-                  _buildMetric('Build Avg', '${_avgBuildTime.toStringAsFixed(2)}ms', _avgBuildTime < 8 ? Colors.blueAccent : Colors.redAccent),
+                  _buildMetric(
+                    'Build Avg',
+                    '${_avgBuildTime.toStringAsFixed(2)}ms',
+                    _avgBuildTime < 8 ? Colors.blueAccent : Colors.redAccent,
+                  ),
                 ],
               ),
             ),
@@ -87,11 +97,21 @@ class _PerformanceHUDState extends State<PerformanceHUD> {
       children: [
         Text(
           '$label: ',
-          style: const TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.normal, decoration: TextDecoration.none),
+          style: const TextStyle(
+            color: Colors.white70,
+            fontSize: 10,
+            fontWeight: FontWeight.normal,
+            decoration: TextDecoration.none,
+          ),
         ),
         Text(
           value,
-          style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.bold, decoration: TextDecoration.none),
+          style: TextStyle(
+            color: color,
+            fontSize: 11,
+            fontWeight: FontWeight.bold,
+            decoration: TextDecoration.none,
+          ),
         ),
       ],
     );

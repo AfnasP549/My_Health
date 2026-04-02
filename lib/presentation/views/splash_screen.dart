@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'permissions_screen.dart';
 
@@ -21,7 +23,8 @@ class _SplashScreenState extends State<SplashScreen> {
     if (mounted) {
       Navigator.of(context).pushReplacement(
         PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) => const PermissionsScreen(),
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              const PermissionsScreen(),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             return FadeTransition(opacity: animation, child: child);
           },
@@ -38,10 +41,7 @@ class _SplashScreenState extends State<SplashScreen> {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          Image.asset(
-            'assets/splash.jpeg',
-            fit: BoxFit.cover,
-          ),
+          Image.asset('assets/splash.jpeg', fit: BoxFit.cover),
           // Gradient overlay for better UI contrast if needed
           Container(
             decoration: BoxDecoration(
